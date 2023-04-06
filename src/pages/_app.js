@@ -3,15 +3,16 @@ import "@rainbow-me/rainbowkit/styles.css";
 
 import { getDefaultWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { configureChains, createClient, WagmiConfig } from "wagmi";
-import {
-  mainnet,
-  polygon,
-  optimism,
-  arbitrum,
-  polygonMumbai,
-} from "wagmi/chains";
+import { polygonMumbai } from "wagmi/chains";
 import { alchemyProvider } from "wagmi/providers/alchemy";
 import { publicProvider } from "wagmi/providers/public";
+import {
+  LivepeerConfig,
+  createReactClient,
+  studioProvider,
+} from "@livepeer/react";
+import { NotificationsContext } from "@/hooks/useNotifications";
+import { useState } from "react";
 
 const { chains, provider } = configureChains(
   [polygonMumbai],
@@ -29,11 +30,22 @@ const wagmiClient = createClient({
   provider,
 });
 
+const livepeerClient = createReactClient({
+  provider: studioProvider({ apiKey: "yourStudioApiKey" }),
+});
+
 export default function App({ Component, pageProps }) {
+  const [showNotifications, setShowNotifications] = useState(false);
   return (
     <WagmiConfig client={wagmiClient}>
       <RainbowKitProvider chains={chains} coolMode>
-        <Component {...pageProps} />
+        <LivepeerConfig client={livepeerClient}>
+          <NotificationsContext.Provider
+            value={{ showNotifications, setShowNotifications }}
+          >
+            <Component {...pageProps} />
+          </NotificationsContext.Provider>
+        </LivepeerConfig>
       </RainbowKitProvider>
     </WagmiConfig>
   );

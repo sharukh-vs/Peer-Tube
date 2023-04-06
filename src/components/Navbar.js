@@ -11,13 +11,13 @@ import { IconContext } from "react-icons";
 import { useContext, useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
-// import NotificationList from "./NotificationList";
-// import { NotificationsContext } from "@/hooks/useNotifications";
+import NotificationsList from "./NotificationsList";
+import { NotificationsContext } from "@/hooks/useNotifications";
 
 export default function Navbar() {
   const [searchText, setSearchText] = useState("");
-  // const { showNotifications, setShowNotifications } =
-  //   useContext(NotificationsContext);
+  const { showNotifications, setShowNotifications } =
+    useContext(NotificationsContext);
   return (
     <>
       <div className="flex flex-row  justify-between w-full  items-center ">
@@ -56,7 +56,7 @@ export default function Navbar() {
 
           <button
             className="hover:rounded-full hover:bg-[#808080] hover:bg-opacity-30 p-2"
-            onClick={() => console.log("Bell Icon Clicked")}
+            onClick={() => setShowNotifications(!showNotifications)}
           >
             <BellIcon width={30} height={30} />
           </button>
