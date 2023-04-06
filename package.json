@@ -9,7 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emotion/react": "^11.10.6",
+    "@emotion/styled": "^11.10.6",
     "@heroicons/react": "^2.0.17",
+    "@mui/icons-material": "^5.11.16",
+    "@mui/material": "^5.11.16",
     "@rainbow-me/rainbowkit": "^0.12.7",
     "next": "13.2.4",
     "react": "18.2.0",
