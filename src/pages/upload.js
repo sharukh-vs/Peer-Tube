@@ -1,7 +1,8 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { BiCloud, BiMusic, BiPlus } from "react-icons/bi";
 import Link from "next/link";
 import saveFileToIPFS from "../utils/saveFileToIPFS";
+import { useCreateAsset } from "@livepeer/react";
 
 export default function Upload() {
   // Creating state for the input field
@@ -16,6 +17,33 @@ export default function Upload() {
   const thumbnailRef = useRef();
   const videoRef = useRef();
 
+  const {
+    mutate: createAsset,
+    data: assets,
+    progress,
+    error,
+    isLoading,
+    isSuccess,
+  } = useCreateAsset(
+    video
+      ? {
+          sources: [
+            {
+              name: video.name,
+              file: video,
+              storage: {
+                ipfs: true,
+                metadata: {
+                  name: title,
+                  description: description,
+                },
+              },
+            },
+          ],
+        }
+      : null
+  );
+
   const handleDiscardBtn = () => {
     setTitle("");
     setDescription("");
@@ -25,12 +53,23 @@ export default function Upload() {
     setVideo("");
   };
 
-  const handleSubmit = async () => {
-    console.log(thumbnail);
-
-    const response = await saveFileToIPFS(thumbnail);
-    console.log(`CID: ${response}`);
+  const uploadVideo = async () => {
+    createAsset?.();
   };
+
+  const handleSubmit = async () => {
+    await uploadVideo();
+    const thumbnailHash = await saveFileToIPFS(thumbnail);
+    console.log(`Thumbnail CID: ${thumbnailHash}`);
+  };
+
+  useEffect(() => {
+    const videoHash = assets;
+    if (assets != null) {
+      console.log(`Video Hash: ${assets[0].playbackId}`);
+    }
+    console.log(`Asset: ${JSON.stringify(assets)}`);
+  }, [assets]);
 
   return (
     <div className="w-full min-h-screen max-h-full bg-[#0F0F0F] flex flex-row">
@@ -163,8 +202,16 @@ export default function Upload() {
               }}
               className="bg-blue-500 hover:bg-blue-700 text-white  py-2  rounded-lg flex px-4 justify-between flex-row items-center"
             >
-              <BiCloud />
-              <p className="ml-2">Upload</p>
+              {isSuccess ? (
+                <p>Uploaded</p>
+              ) : isLoading ? (
+                <p>....</p>
+              ) : (
+                <>
+                  <BiCloud />
+                  <p className="ml-2">Upload</p>
+                </>
+              )}
             </button>
           </div>
         </div>

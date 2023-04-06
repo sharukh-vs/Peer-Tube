@@ -11,7 +11,6 @@ import { IconContext } from "react-icons";
 import { useContext, useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
-import NotificationsList from "./NotificationsList";
 import { NotificationsContext } from "@/hooks/useNotifications";
 
 export default function Navbar() {
