@@ -3,6 +3,11 @@ import { BiCloud, BiMusic, BiPlus } from "react-icons/bi";
 import Link from "next/link";
 import saveFileToIPFS from "../utils/saveFileToIPFS";
 import { useCreateAsset } from "@livepeer/react";
+import { Box, CircularProgress } from "@mui/material";
+import { useContractWrite, usePrepareContractWrite } from "wagmi";
+import PeerTube from "../../artifacts/contracts/PeerTube.sol/PeerTube.json";
+
+const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
 
 export default function Upload() {
   // Creating state for the input field
@@ -12,6 +17,8 @@ export default function Upload() {
   const [location, setLocation] = useState("");
   const [thumbnail, setThumbnail] = useState("");
   const [video, setVideo] = useState("");
+  const [videoHash, setVideoHash] = useState("");
+  const [thumbnailHash, setThumbnailHash] = useState("");
 
   //  Creating a ref for thumbnail and video
   const thumbnailRef = useRef();
@@ -44,6 +51,21 @@ export default function Upload() {
       : null
   );
 
+  const { config: uploadVideoConfig } = usePrepareContractWrite({
+    address: CONTRACT_ADDRESS,
+    abi: PeerTube.abi,
+    functionName: "uploadVideo",
+    args: [videoHash, title, description, category, thumbnailHash],
+  });
+
+  const {
+    data: uploadData,
+    write: uploadVideo,
+    isLoading: isUploading,
+    isSuccess: isUploadSuccess,
+    error: uploadError,
+  } = useContractWrite(uploadVideoConfig);
+
   const handleDiscardBtn = () => {
     setTitle("");
     setDescription("");
@@ -53,20 +75,26 @@ export default function Upload() {
     setVideo("");
   };
 
-  const uploadVideo = async () => {
+  const uploadVideoToLivepeer = async () => {
     createAsset?.();
   };
 
-  const handleSubmit = async () => {
-    await uploadVideo();
-    const thumbnailHash = await saveFileToIPFS(thumbnail);
+  const handleUploadToIpfs = async () => {
+    await uploadVideoToLivepeer();
+    const hash = await saveFileToIPFS(thumbnail);
+    setThumbnailHash(hash);
+
     console.log(`Thumbnail CID: ${thumbnailHash}`);
   };
 
+  const handleSubmit = async () => {
+    console.log(`Video hash: ${videoHash}`);
+    uploadVideo();
+    console.log(`Video Data: ${uploadData}`);
+  };
   useEffect(() => {
-    const videoHash = assets;
     if (assets != null) {
-      console.log(`Video Hash: ${assets[0].playbackId}`);
+      setVideoHash(assets[0].playbackId);
     }
     console.log(`Asset: ${JSON.stringify(assets)}`);
   }, [assets]);
@@ -106,7 +134,10 @@ export default function Upload() {
                 <label className="text-[#9CA3AF]  text-sm">Category</label>
                 <select
                   value={category}
-                  onChange={(e) => setCategory(e.target.value)}
+                  onChange={(e) => {
+                    setCategory(e.target.value);
+                    console.log(`Category: ${category}`);
+                  }}
                   className="w-[90%] text-white placeholder:text-gray-600  rounded-md mt-2 h-12 p-2 border  bg-[#1a1c1f] border-[#444752] focus:outline-none"
                 >
                   <option>Music</option>
@@ -185,7 +216,7 @@ export default function Upload() {
           }}
         />
 
-        <div className=" -mt-10 mr-10 flex  justify-end">
+        <div className=" -mt-10 mr-10 flex  justify-evenly">
           <div className="flex items-center">
             <Link href="/" passHref>
               <button
@@ -197,19 +228,43 @@ export default function Upload() {
             </Link>
 
             <button
-              onClick={() => {
-                handleSubmit();
+              onClick={async () => {
+                await handleUploadToIpfs();
+                console.log(`Video Hash from OnClick: ${videoHash}`);
               }}
-              className="bg-blue-500 hover:bg-blue-700 text-white  py-2  rounded-lg flex px-4 justify-between flex-row items-center"
+              className="disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-500 bg-blue-500 hover:bg-blue-700 text-white  py-2  rounded-lg flex px-4 justify-between flex-row items-center"
+              disabled={isSuccess}
             >
               {isSuccess ? (
                 <p>Uploaded</p>
               ) : isLoading ? (
-                <p>....</p>
+                <Box>
+                  <CircularProgress sx={{ color: "white" }} />
+                </Box>
               ) : (
                 <>
                   <BiCloud />
-                  <p className="ml-2">Upload</p>
+                  <p className="ml-2">Upload To IPFS</p>
+                </>
+              )}
+            </button>
+            <button
+              onClick={async () => {
+                handleSubmit();
+              }}
+              className=" disabled:opacity-50 bg-blue-500  disabled:hover:bg-blue-500 hover:bg-blue-700 disabled:cursor-not-allowed text-white  py-2 ml-6  rounded-lg flex px-4 justify-between flex-row items-center"
+              disabled={!isSuccess}
+            >
+              {isUploadSuccess ? (
+                <p>Success!</p>
+              ) : isUploading ? (
+                <Box sx={{ color: "white" }}>
+                  <CircularProgress />
+                </Box>
+              ) : (
+                <>
+                  <BiCloud />
+                  <p className="ml-2">Upload </p>
                 </>
               )}
             </button>

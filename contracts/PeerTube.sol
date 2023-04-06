@@ -61,10 +61,7 @@ contract PeerTube{
             creator: msg.sender
         });
 
-        videoCount++;
-
-
-        emit VideoUploaded(
+         emit VideoUploaded(
             videoCount,
             _videoHash,
             _title,
@@ -74,6 +71,11 @@ contract PeerTube{
             block.timestamp,
             msg.sender
         );
+
+        videoCount++;
+
+
+       
 
     }
 
