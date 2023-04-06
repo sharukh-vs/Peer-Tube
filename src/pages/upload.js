@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { BiCloud, BiMusic, BiPlus } from "react-icons/bi";
 import Link from "next/link";
+import saveFileToIPFS from "../utils/saveFileToIPFS";
 
 export default function Upload() {
   // Creating state for the input field
@@ -24,6 +25,13 @@ export default function Upload() {
     setVideo("");
   };
 
+  const handleSubmit = async () => {
+    console.log(thumbnail);
+
+    const response = await saveFileToIPFS(thumbnail);
+    console.log(`CID: ${response}`);
+  };
+
   return (
     <div className="w-full min-h-screen max-h-full bg-[#0F0F0F] flex flex-row">
       <div className="flex-1 flex flex-col">
@@ -33,14 +41,14 @@ export default function Upload() {
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Rick Astley - Never Gonna Give You Up (Official Music Video)"
+              placeholder="Title"
               className="w-[90%] text-white placeholder:text-gray-600  rounded-md mt-2 h-12 p-2 border  bg-[#1a1c1f] border-[#444752] focus:outline-none"
             />
             <label className="text-[#9CA3AF] mt-10">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Never Gonna Give You Up was a global smash on its release in July 1987, topping the charts in 25 countries including Rick’s native UK and the US Billboard Hot 100.  It also won the Brit Award for Best single in 1988. Stock Aitken and Waterman wrote and produced the track which was the lead-off single and lead track from Rick’s debut LP “Whenever You Need Somebody."
+              placeholder="Description"
               className="w-[90%] text-white h-32 placeholder:text-gray-600  rounded-md mt-2 p-2 border  bg-[#1a1c1f] border-[#444752] focus:outline-none"
             />
 
