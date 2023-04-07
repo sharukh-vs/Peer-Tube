@@ -91,7 +91,7 @@ export default function Video() {
         <div className="w-full  flex flex-row">
           <div className="flex-1 flex flex-col">
             {video && (
-              <div className="flex flex-col m-10 justify-between      lg:flex-row">
+              <div className="flex flex-col m-10 justify-between lg:flex-row">
                 <div className="lg:w-3/4 w-6/6">
                   <VideoContainer video={video} />
                 </div>

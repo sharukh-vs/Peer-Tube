@@ -1,6 +1,7 @@
 import Image from "next/image";
 import React, { useEffect } from "react";
 import Avatar from "@mui/material/Avatar";
+import Jazzicon, { jsNumberForAddress } from "react-jazzicon";
 
 export default function VideoCard({
   id,
@@ -33,7 +34,7 @@ export default function VideoCard({
 
       <div className="flex  flex-row mt-2">
         <div className="mr-3">
-          <Avatar sx={{ backgroundColor: "yellow", color: "black" }}>C</Avatar>
+          <Jazzicon diameter={30} seed={jsNumberForAddress(`${creator}`)} />
         </div>
         <div className="flex flex-col">
           <p className="font-bold text-lg">{title}</p>
