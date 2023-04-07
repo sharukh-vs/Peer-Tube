@@ -4,14 +4,16 @@ pragma solidity ^0.8.9;
 contract PeerTube{
 
     uint256 public videoCount;
+    uint256 public commentCount;
     mapping(uint256 => Video) public videos;
 
     struct Comment {
-        uint256 id;
+        address author;
+        uint256 videoId;
         string message;
     }
 
-    mapping(uint256 => Comment[]) public videoComments;
+    mapping(uint256 => Comment) public videoComments;
     //videoId -> likeCount
     mapping(uint256 => uint256) private likes;
     mapping(uint256 => uint256) private dislikes;
@@ -40,7 +42,12 @@ contract PeerTube{
         address author
     );
 
-    event CommentAdded (Comment comment);
+    event CommentAdded (
+        uint256 id,
+        uint256 videoId,
+        address author,
+        string message
+    );
     event Liked(address user, uint256 likeCount);
     event Disliked(address user, uint256 dislikeCount);
 
@@ -82,10 +89,11 @@ contract PeerTube{
     function addComment(uint256 _videoId, string memory _message) public {
         require(bytes(_message).length > 0, "No message");
 
-        Comment memory comment = Comment({id: _videoId, message: _message});
+        Comment memory comment = Comment({author: msg.sender,videoId: _videoId, message: _message});
 
-        videoComments[_videoId].push(comment);
-        emit CommentAdded(comment);
+        videoComments[commentCount] = comment;
+        
+        emit CommentAdded(commentCount, _videoId, msg.sender, _message);
 
     }
     function addLike(uint256 _videoId) public {
@@ -112,7 +120,7 @@ contract PeerTube{
         emit Disliked(msg.sender, dislikes[_videoId]);
     }
 
-    function getComments(uint256 _videoId) public view returns(Comment[] memory){
+    function getComment(uint256 _videoId) public view returns(Comment memory){
         return videoComments[_videoId];
     }
 

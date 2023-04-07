@@ -1,13 +1,92 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import LivepeerPlayer from "./LivepeerPlayer";
-import { Avatar, Divider } from "@mui/material";
+import Divider from "@mui/material/Divider";
 import Image from "next/image";
 import Jazzicon, { jsNumberForAddress } from "react-jazzicon";
 import { FiThumbsDown, FiThumbsUp } from "react-icons/fi";
+import { styled } from "@mui/material/styles";
 import { FaThumbsUp, FaThumbsDown } from "react-icons/fa";
 import { IconContext } from "react-icons";
+import TextField from "@mui/material/TextField";
+import Comment from "./Comment";
+import {
+  usePrepareContractWrite,
+  useContractWrite,
+  useContractRead,
+} from "wagmi";
+import PeerTube from "../../artifacts/contracts/PeerTube.sol/PeerTube.json";
+import { Box, CircularProgress } from "@mui/material";
+
+const StyledTextField = styled(TextField)({
+  "& label": {
+    color: "white",
+  },
+  "&:hover label": {
+    fontWeight: 500,
+  },
+  "& label.Mui-focused": {
+    color: "white",
+  },
+  "& .MuiInput-underline": {
+    borderBottomColor: "white",
+  },
+  "& .MuiInput-underline:after": {
+    borderBottomColor: "white",
+  },
+  "& .MuiOutlinedInput-root": {
+    "& fieldset": {
+      borderColor: "white",
+    },
+    "&:hover fieldset": {
+      borderColor: "white",
+      borderWidth: 2,
+    },
+    "&.Mui-focused fieldset": {
+      borderColor: "white",
+    },
+  },
+});
+
+const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
 
 export default function VideoContainer({ video }) {
+  const [comment, setComment] = useState("");
+  const [comments, setComments] = useState([]);
+
+  const { config: commentConfig } = usePrepareContractWrite({
+    address: CONTRACT_ADDRESS,
+    abi: PeerTube.abi,
+    functionName: "addComment",
+    args: [video.id, comment],
+  });
+
+  const {
+    data: commentData,
+    write: uploadComment,
+    isLoading: isUploading,
+    isSuccess: commentAddSuccess,
+    error: commentError,
+  } = useContractWrite(commentConfig);
+
+  const { data: commentsData } = useContractRead({
+    address: CONTRACT_ADDRESS,
+    abi: PeerTube.abi,
+    functionName: "getComments",
+    args: [video.id],
+  });
+
+  const handleCommentUpload = () => {
+    setComment("");
+    uploadComment();
+    console.log(`Comment Data: ${commentData}`);
+  };
+
+  useEffect(() => {
+    if (commentsData) {
+      setComments(commentsData);
+      console.log(`CommentsData: ${comments[0][1]}`);
+    }
+  }, [commentsData]);
   return (
     <div>
       <LivepeerPlayer videoHash={video.hash} videoTitle={video.title} />
@@ -58,6 +137,54 @@ export default function VideoContainer({ video }) {
             <div className="px-4">{video.description}</div>
           </div>
         </div>
+      </div>
+      <div className="py-10">
+        <Divider sx={{ backgroundColor: "#808080" }} />
+      </div>
+      <div className=" text-gray-600">
+        <StyledTextField
+          id="standard-multiline-flexible"
+          label="Add a Comment"
+          value={comment}
+          onChange={(e) => {
+            setComment(e.target.value);
+          }}
+          multiline
+          maxRows={4}
+          sx={{ width: "100%" }}
+          InputProps={{
+            style: {
+              color: "white",
+            },
+          }}
+          variant="standard"
+        />
+      </div>
+      <div className="flex justify-end mt-2">
+        <button
+          className="py-2 px-4 rounded-lg bg-slate-600 text-white disabled:opacity-50"
+          disabled={comment ? false : true}
+          onClick={() => {
+            console.log(comment);
+            handleCommentUpload();
+          }}
+        >
+          {isUploading ? (
+            <Box>
+              <CircularProgress sx={{ color: "white" }} />
+            </Box>
+          ) : (
+            <p>Comment</p>
+          )}
+        </button>
+      </div>
+      <div>
+        {/* {commentAddSuccess && (
+          <Comment author={video.author} comment={comment} />
+        )} */}
+        {comments?.map((comment, idx) => (
+          <Comment author={`${video.author}`} comment={`${comment[0][1]}`} />
+        ))}
       </div>
     </div>
   );
