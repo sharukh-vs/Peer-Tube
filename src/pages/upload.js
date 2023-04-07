@@ -85,6 +85,7 @@ export default function Upload() {
     setThumbnailHash(hash);
 
     console.log(`Thumbnail CID: ${thumbnailHash}`);
+    console.log(thumbnail.name);
   };
 
   const handleSubmit = async () => {
