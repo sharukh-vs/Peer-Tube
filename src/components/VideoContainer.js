@@ -16,6 +16,7 @@ import {
 } from "wagmi";
 import PeerTube from "../../artifacts/contracts/PeerTube.sol/PeerTube.json";
 import { Box, CircularProgress } from "@mui/material";
+import { useApolloClient, gql } from "@apollo/client";
 
 const StyledTextField = styled(TextField)({
   "& label": {
@@ -53,6 +54,7 @@ export default function VideoContainer({ video }) {
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
 
+  const client = useApolloClient();
   const { config: commentConfig } = usePrepareContractWrite({
     address: CONTRACT_ADDRESS,
     abi: PeerTube.abi,
@@ -68,12 +70,42 @@ export default function VideoContainer({ video }) {
     error: commentError,
   } = useContractWrite(commentConfig);
 
-  const { data: commentsData } = useContractRead({
-    address: CONTRACT_ADDRESS,
-    abi: PeerTube.abi,
-    functionName: "getComments",
-    args: [video.id],
-  });
+  const COMMENTS_QUERY = gql`
+    query comments($first: Int, $where: Video_filter, $videoId: String) {
+      comments(first: $first, where: { videoId: $videoId }) {
+        id
+        author
+        videoId
+        comment_message
+      }
+    }
+  `;
+
+  const getComments = () => {
+    console.log(typeof video.id);
+    client
+      .query({
+        query: COMMENTS_QUERY,
+        variables: {
+          first: 20,
+          videoId: video.id,
+        },
+        fetchPolicy: "network-only",
+      })
+      .then(({ data }) => {
+        setComments(data.comments);
+      })
+      .catch((err) => {
+        alert("Something went wrong. please try again.!", err.message);
+      });
+  };
+
+  //   const { data: commentsData } = useContractRead({
+  //     address: CONTRACT_ADDRESS,
+  //     abi: PeerTube.abi,
+  //     functionName: "getComments",
+  //     args: [video.id],
+  //   });
 
   const handleCommentUpload = () => {
     setComment("");
@@ -82,11 +114,8 @@ export default function VideoContainer({ video }) {
   };
 
   useEffect(() => {
-    if (commentsData) {
-      setComments(commentsData);
-      console.log(`CommentsData: ${comments[0][1]}`);
-    }
-  }, [commentsData]);
+    getComments();
+  }, []);
   return (
     <div>
       <LivepeerPlayer videoHash={video.hash} videoTitle={video.title} />
@@ -182,8 +211,11 @@ export default function VideoContainer({ video }) {
         {/* {commentAddSuccess && (
           <Comment author={video.author} comment={comment} />
         )} */}
-        {comments?.map((comment, idx) => (
-          <Comment author={`${video.author}`} comment={`${comment[0][1]}`} />
+        {comments?.map((comment) => (
+          <Comment
+            author={`${comment.author}`}
+            comment={`${comment.comment_message}`}
+          />
         ))}
       </div>
     </div>

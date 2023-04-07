@@ -94,6 +94,7 @@ contract PeerTube{
         videoComments[commentCount] = comment;
         
         emit CommentAdded(commentCount, _videoId, msg.sender, _message);
+        commentCount++;
 
     }
     function addLike(uint256 _videoId) public {

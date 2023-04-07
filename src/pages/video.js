@@ -36,7 +36,7 @@ export default function Video() {
         skip: $skip
         orderBy: $orderBy
         orderDirection: $orderDirection
-        where: { id_gte: 3 }
+        where: $where
       ) {
         id
         hash

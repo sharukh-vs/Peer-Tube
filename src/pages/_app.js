@@ -37,7 +37,7 @@ const livepeerClient = createReactClient({
 
 const apolloClient = new ApolloClient({
   cache: new InMemoryCache(),
-  uri: "https://api.thegraph.com/subgraphs/name/mohdziyadc/peer-tube",
+  uri: "https://api.thegraph.com/subgraphs/name/mohdziyadc/peer-tube-v2",
 });
 
 export default function App({ Component, pageProps }) {
