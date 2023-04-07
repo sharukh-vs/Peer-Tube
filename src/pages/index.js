@@ -32,7 +32,7 @@ export default function Home() {
         skip: $skip
         orderBy: $orderBy
         orderDirection: $orderDirection
-        where: $where
+        where: { id_gte: 3 }
       ) {
         id
         hash
@@ -52,9 +52,9 @@ export default function Home() {
         query: QUERY,
         variables: {
           first: 200,
-          skip: 3,
+          skip: 0,
           orderBy: "date",
-          orderDirection: "asc",
+          orderDirection: "desc",
         },
         fetchPolicy: "network-only",
       })
@@ -93,13 +93,16 @@ export default function Home() {
         )}
         <div className="grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 w-full h-full justify-center z-10 md:pl-[10%] md:pt-[10%] lg:pt-[7%] lg:pl-[7%]  pt-[15%] pl-[15%]">
           {videos?.map((video) => (
-            <VideoCard
-              title={video.title}
-              createdAt={video.date}
-              creator={video.author}
-              thumbnailHash={video.thumbnailHash}
-              link={thumbnailHash}
-            />
+            <div>
+              <VideoCard
+                id={video.id}
+                title={video.title}
+                createdAt={video.date}
+                creator={video.author}
+                thumbnailHash={video.thumbnailHash}
+                link={thumbnailHash}
+              />
+            </div>
           ))}
         </div>
       </div>

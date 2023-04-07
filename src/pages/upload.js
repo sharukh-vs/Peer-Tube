@@ -90,7 +90,7 @@ export default function Upload() {
 
   const handleSubmit = async () => {
     console.log(`Video hash: ${videoHash}`);
-    uploadVideo();
+    uploadVideo?.();
     console.log(`Video Data: ${uploadData}`);
   };
   useEffect(() => {

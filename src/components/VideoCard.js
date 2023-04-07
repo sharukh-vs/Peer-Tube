@@ -1,9 +1,9 @@
 import Image from "next/image";
 import React, { useEffect } from "react";
 import Avatar from "@mui/material/Avatar";
-import listUploads from "../utils/saveFileToIPFS";
 
 export default function VideoCard({
+  id,
   title,
   creator,
   createdAt,
@@ -12,8 +12,11 @@ export default function VideoCard({
 }) {
   return (
     <div
-      className=" text-white  w-[320px] mb-3 hover:cursor-pointer hover:bg-[#201f1f] rounded-lg p-1.5 "
-      onClick={() => console.log("Card Clicked")}
+      className=" text-white  w-[320px] mb-3 hover:cursor-pointer hover:bg-[#201f1f] rounded-lg p-1.5
+     "
+      onClick={() => {
+        window.location.href = `/video?id=${id}`;
+      }}
     >
       <div className="w-full bg-black  rounded-lg   flex items-center justify-center">
         <Image
