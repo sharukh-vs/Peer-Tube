@@ -4,8 +4,14 @@ import Link from "next/link";
 import saveFileToIPFS from "../utils/saveFileToIPFS";
 import { useCreateAsset } from "@livepeer/react";
 import { Box, CircularProgress } from "@mui/material";
-import { useContractWrite, usePrepareContractWrite } from "wagmi";
+import {
+  useContractWrite,
+  usePrepareContractWrite,
+  useSigner,
+  useAccount,
+} from "wagmi";
 import PeerTube from "../../artifacts/contracts/PeerTube.sol/PeerTube.json";
+import sendNotifs from "@/utils/sendNotifs";
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
 
@@ -19,6 +25,9 @@ export default function Upload() {
   const [video, setVideo] = useState("");
   const [videoHash, setVideoHash] = useState("");
   const [thumbnailHash, setThumbnailHash] = useState("");
+
+  const { data: signer } = useSigner();
+  const { address } = useAccount();
 
   //  Creating a ref for thumbnail and video
   const thumbnailRef = useRef();

@@ -9,6 +9,9 @@ import { FaThumbsUp, FaThumbsDown } from "react-icons/fa";
 import { IconContext } from "react-icons";
 import TextField from "@mui/material/TextField";
 import Comment from "./Comment";
+import { useSigner, useAccount } from "wagmi";
+import * as PushAPI from "@pushprotocol/restapi";
+
 import {
   usePrepareContractWrite,
   useContractWrite,
@@ -17,6 +20,7 @@ import {
 import PeerTube from "../../artifacts/contracts/PeerTube.sol/PeerTube.json";
 import { Box, CircularProgress } from "@mui/material";
 import { useApolloClient, gql } from "@apollo/client";
+// import subscribeToChannel from "@/utils/subscribeToChannel";
 
 const StyledTextField = styled(TextField)({
   "& label": {
@@ -53,6 +57,17 @@ const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
 export default function VideoContainer({ video }) {
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
+  const [likes, setLikes] = useState();
+  const [dislikes, setDislikes] = useState();
+  const [subscribed, setSubscribed] = useState(false);
+  const [notified, setNotified] = useState(false);
+
+  const { data: signer } = useSigner({
+    onSuccess(signer) {
+      console.log("Success the Signer is :", signer);
+    },
+  });
+  const { address } = useAccount();
 
   const client = useApolloClient();
   const { config: commentConfig } = usePrepareContractWrite({
@@ -62,6 +77,19 @@ export default function VideoContainer({ video }) {
     args: [video.id, comment],
   });
 
+  const { config: likeConfig } = usePrepareContractWrite({
+    address: CONTRACT_ADDRESS,
+    abi: PeerTube.abi,
+    functionName: "addLike",
+    args: [video.id],
+  });
+  const { config: dislikeConfig } = usePrepareContractWrite({
+    address: CONTRACT_ADDRESS,
+    abi: PeerTube.abi,
+    functionName: "addDislike",
+    args: [video.id],
+  });
+
   const {
     data: commentData,
     write: uploadComment,
@@ -69,6 +97,20 @@ export default function VideoContainer({ video }) {
     isSuccess: commentAddSuccess,
     error: commentError,
   } = useContractWrite(commentConfig);
+  const {
+    data: likeData,
+    write: likeVideo,
+    isLoading: isLiking,
+    isSuccess: likeVideoSuccess,
+    error: likeError,
+  } = useContractWrite(likeConfig);
+  const {
+    data: dislikeData,
+    write: dislikeVideo,
+    isLoading: isDisliking,
+    isSuccess: dislikeVideoSuccess,
+    error: dislikeError,
+  } = useContractWrite(dislikeConfig);
 
   const COMMENTS_QUERY = gql`
     query comments($first: Int, $where: Video_filter, $videoId: String) {
@@ -82,7 +124,6 @@ export default function VideoContainer({ video }) {
   `;
 
   const getComments = () => {
-    console.log(typeof video.id);
     client
       .query({
         query: COMMENTS_QUERY,
@@ -96,8 +137,55 @@ export default function VideoContainer({ video }) {
         setComments(data.comments);
       })
       .catch((err) => {
-        alert("Something went wrong. please try again.!", err.message);
+        console.log(`Error: ${err}`);
       });
+  };
+
+  const subscribeToChannel = async (signer, address) => {
+    console.log(`Address: ${address}`);
+    console.log("Signer: ", signer);
+
+    await PushAPI.channels.subscribe({
+      signer: signer,
+      channelAddress: "eip155:80001:0x068025e6c34BaED33D3744fCd4D98c26e15dE43D",
+      userAddress: `eip155:80001:${address}`,
+      onSuccess: () => {
+        console.log("opt in success");
+        setSubscribed(true);
+      },
+      onError: () => {
+        console.log("opt in error");
+      },
+      env: "staging",
+    });
+  };
+
+  const sendNotifs = async (signer, creatorAddress, videoTitle) => {
+    try {
+      await PushAPI.payloads.sendNotification({
+        signer: signer,
+        type: 1, // target
+        identityType: 2, // direct payload
+        notification: {
+          title: `[SDK-TEST] notification TITLE:`,
+          body: `[sdk-test] notification BODY`,
+        },
+        payload: {
+          title: `${creatorAddress.slice(0, 12)}....${creatorAddress.slice(
+            35,
+            42
+          )} uploaded: `,
+          body: `${videoTitle}`,
+          cta: "",
+          img: "",
+        }, // recipient address
+        channel: "eip155:80001:0x068025e6c34BaED33D3744fCd4D98c26e15dE43D", // your channel address
+        env: "staging",
+      });
+    } catch (e) {
+      console.log(e.message);
+    }
+    // console.log("Api Response: ", apiResponse);
   };
 
   //   const { data: commentsData } = useContractRead({
@@ -107,6 +195,20 @@ export default function VideoContainer({ video }) {
   //     args: [video.id],
   //   });
 
+  const { data: likeCount } = useContractRead({
+    address: CONTRACT_ADDRESS,
+    abi: PeerTube.abi,
+    functionName: "getLikes",
+    args: [video.id],
+  });
+
+  const { data: dislikeCount } = useContractRead({
+    address: CONTRACT_ADDRESS,
+    abi: PeerTube.abi,
+    functionName: "getDislikes",
+    args: [video.id],
+  });
+
   const handleCommentUpload = () => {
     setComment("");
     uploadComment();
@@ -114,8 +216,14 @@ export default function VideoContainer({ video }) {
   };
 
   useEffect(() => {
+    console.log(`Video id from useEffect: ${video.id}`);
+
     getComments();
+    console.log(`Like Count: ${likeCount}`);
+    setLikes(likeCount?.toString());
+    setDislikes(dislikeCount?.toString());
   }, []);
+
   return (
     <div>
       <LivepeerPlayer videoHash={video.hash} videoTitle={video.title} />
@@ -134,26 +242,57 @@ export default function VideoContainer({ video }) {
                   "...." +
                   video.author.slice(34, 42)}
               </div>
-              <div className="bg-white ml-5 py-2 px-3 text-black font-semibold rounded-3xl hover:opacity-80">
-                <button>Subscribe</button>
-              </div>
+              {`${address.toLowerCase()}` === video.author ? (
+                <div className="bg-white ml-5 py-2 px-3 text-black font-semibold rounded-3xl hover:opacity-80 disabled:bg-gray-500">
+                  <button
+                    disabled={notified}
+                    onClick={async () => {
+                      await sendNotifs(signer, address, video.title);
+                    }}
+                  >
+                    Notify Subscribers
+                  </button>
+                </div>
+              ) : (
+                <div className="bg-white ml-5 py-2 px-3 text-black font-semibold rounded-3xl hover:opacity-80 disabled:bg-gray-500">
+                  <button
+                    disabled={subscribed}
+                    onClick={async () => {
+                      await subscribeToChannel(signer, address);
+                    }}
+                  >
+                    {subscribed ? <p>Subscribed</p> : <p>Subscribe</p>}
+                  </button>
+                </div>
+              )}
             </div>
             <div className="bg-[#3c3c3c] flex flex-row py-2 px-5 justify-between rounded-3xl">
               <div className="mr-2 pr-2 border-r-2 hover:opacity-70">
-                <button className="flex flex-row  items-center">
+                <button
+                  className="flex flex-row  items-center"
+                  onClick={() => {
+                    likeVideo();
+                  }}
+                >
                   <IconContext.Provider value={{ className: "w-6 h-6" }}>
                     <FiThumbsUp className="text-white" />
                   </IconContext.Provider>
-                  <p className="px-2">121</p>
+                  <p className="px-2">{likes}</p>
                 </button>
               </div>
 
               <div className="hover:opacity-70">
-                <button className="flex flex-row items-center">
+                <button
+                  className="flex flex-row items-center"
+                  onClick={() => {
+                    console.log(`Video id: ${video.id}`);
+                    dislikeVideo();
+                  }}
+                >
                   <IconContext.Provider value={{ className: "w-6 h-6" }}>
                     <FiThumbsDown className="text-white" />
                   </IconContext.Provider>
-                  <p className="px-2">20</p>
+                  <p className="px-2">{dislikes}</p>
                 </button>
               </div>
             </div>

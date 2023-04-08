@@ -8,31 +8,48 @@ import Avatar from "@mui/material/Avatar";
 import Typography from "@mui/material/Typography";
 import { ListSubheader } from "@mui/material";
 // import { FixedSizeList } from "react-window";
+import * as PushAPI from "@pushprotocol/restapi";
+import { useAccount } from "wagmi";
+import { useState } from "react";
 
-const notifications = [
-  {
-    creator: "0x379....7892",
-    title: "I'll be in your neighborhood doing errands this",
-  },
-  {
-    creator: "0x379....7892",
-    title: "I'll be in your neighborhood doing errands this",
-  },
-  {
-    creator: "0x379....7892",
-    title: "I'll be in your neighborhood doing errands this",
-  },
-  {
-    creator: "0x379....7892",
-    title: "I'll be in your neighborhood doing errands this",
-  },
-  {
-    creator: "0x379....7892",
-    title: "I'll be in your neighborhood doing errands this",
-  },
-];
+// const notifications = [
+//   {
+//     creator: "0x379....7892",
+//     title: "I'll be in your neighborhood doing errands this",
+//   },
+//   {
+//     creator: "0x379....7892",
+//     title: "I'll be in your neighborhood doing errands this",
+//   },
+//   {
+//     creator: "0x379....7892",
+//     title: "I'll be in your neighborhood doing errands this",
+//   },
+//   {
+//     creator: "0x379....7892",
+//     title: "I'll be in your neighborhood doing errands this",
+//   },
+//   {
+//     creator: "0x379....7892",
+//     title: "I'll be in your neighborhood doing errands this",
+//   },
+// ];
 
 export default function NotificationList() {
+  const { address } = useAccount();
+  const [notifications, setNotifications] = useState([]);
+  const getNotifs = async (userAddress) => {
+    const notifications = await PushAPI.user.getFeeds({
+      user: `eip155:80001:${userAddress}`,
+      env: "staging",
+    });
+    console.log(notifications);
+    setNotifications(notifications);
+  };
+
+  React.useEffect(() => {
+    getNotifs(address);
+  }, []);
   return (
     <List
       height={400}
@@ -56,14 +73,14 @@ export default function NotificationList() {
         </ListItem>
       </ListSubheader>
       <Divider sx={{ backgroundColor: "#808080" }} />
-      {notifications.map(({ creator, title }) => (
+      {notifications.map((notification) => (
         <>
           <ListItem alignItems="flex-start">
             <ListItemAvatar>
               <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
             </ListItemAvatar>
             <ListItemText
-              primary={`${creator} uploaded :`}
+              primary={`${notification.title} :`}
               secondary={
                 <React.Fragment>
                   <Typography
@@ -72,7 +89,7 @@ export default function NotificationList() {
                     variant="body2"
                     color="white"
                   >
-                    {title}
+                    {notification.message}
                   </Typography>
                 </React.Fragment>
               }
