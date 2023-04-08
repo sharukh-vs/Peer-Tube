@@ -81,7 +81,7 @@ export default function VideoContainer({ video }) {
     address: CONTRACT_ADDRESS,
     abi: PeerTube.abi,
     functionName: "addLike",
-    args: [video.id],
+    args: [parseInt(video.id)],
   });
   const { config: dislikeConfig } = usePrepareContractWrite({
     address: CONTRACT_ADDRESS,
@@ -97,6 +97,7 @@ export default function VideoContainer({ video }) {
     isSuccess: commentAddSuccess,
     error: commentError,
   } = useContractWrite(commentConfig);
+
   const {
     data: likeData,
     write: likeVideo,
@@ -271,6 +272,7 @@ export default function VideoContainer({ video }) {
                 <button
                   className="flex flex-row  items-center"
                   onClick={() => {
+                    console.log(`Video id: ${video.id}`);
                     likeVideo();
                   }}
                 >

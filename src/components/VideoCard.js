@@ -40,7 +40,7 @@ export default function VideoCard({
           <p className="font-bold text-lg">{title}</p>
           <div className=" text-gray-500">
             <div>{creator.slice(0, 6) + "...." + creator.slice(37, 42)}</div>
-            <div>{createdAt}</div>
+            <div>Block: {createdAt}</div>
           </div>
         </div>
       </div>
