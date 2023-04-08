@@ -19,8 +19,8 @@ export default function Home() {
   const [thumbnailHash, setThumbnailHash] = useState("");
 
   const client = useApolloClient();
-
   const { address } = useAccount();
+  const [account, setAccount] = useState();
 
   const QUERY = gql`
     query videos(
@@ -82,8 +82,13 @@ export default function Home() {
   // }
   useEffect(() => {
     // Runs the function getVideos when the component is mounted
+    if (address) {
+      setAccount(address);
+    } else {
+      setAccount(null);
+    }
     getVideos();
-  }, []);
+  }, [address]);
 
   return (
     <>
@@ -94,7 +99,7 @@ export default function Home() {
             <NotificationList />
           </div>
         )}
-        {address ? (
+        {account ? (
           <div className="grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 w-full h-full justify-center z-10 md:pl-[10%] md:pt-[10%] lg:pt-[7%] lg:pl-[7%]  pt-[15%] pl-[15%]">
             {videos?.map((video) => (
               <div>
