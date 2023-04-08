@@ -9,6 +9,7 @@ import { NotificationsContext } from "@/hooks/useNotifications";
 import NotificationList from "@/components/NotificationsList";
 import { useApolloClient, gql } from "@apollo/client";
 import { create } from "ipfs-http-client";
+import { useAccount } from "wagmi";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,6 +19,8 @@ export default function Home() {
   const [thumbnailHash, setThumbnailHash] = useState("");
 
   const client = useApolloClient();
+
+  const { address } = useAccount();
 
   const QUERY = gql`
     query videos(
@@ -91,20 +94,28 @@ export default function Home() {
             <NotificationList />
           </div>
         )}
-        <div className="grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 w-full h-full justify-center z-10 md:pl-[10%] md:pt-[10%] lg:pt-[7%] lg:pl-[7%]  pt-[15%] pl-[15%]">
-          {videos?.map((video) => (
-            <div>
-              <VideoCard
-                id={video.id}
-                title={video.title}
-                createdAt={video.date}
-                creator={video.author}
-                thumbnailHash={video.thumbnailHash}
-                link={thumbnailHash}
-              />
-            </div>
-          ))}
-        </div>
+        {address ? (
+          <div className="grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 w-full h-full justify-center z-10 md:pl-[10%] md:pt-[10%] lg:pt-[7%] lg:pl-[7%]  pt-[15%] pl-[15%]">
+            {videos?.map((video) => (
+              <div>
+                <VideoCard
+                  id={video.id}
+                  title={video.title}
+                  createdAt={video.date}
+                  creator={video.author}
+                  thumbnailHash={video.thumbnailHash}
+                  link={thumbnailHash}
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex w-full h-screen justify-center items-center">
+            <p className="text-xl font-semibold text-white">
+              Please connect your Wallet
+            </p>
+          </div>
+        )}
       </div>
     </>
   );
