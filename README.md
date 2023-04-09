@@ -20,7 +20,7 @@ We combined Push Protocol, TheGraph Protocol and Livepeer, and deployed it all o
 There are three parts to our project.
 
 **First - The Backend.**      
-The Backend is basically our smart contract which interacts with the blockchain. For the smart contract, we have used Solidity. We have used Hardhat for compiling, deploying and testing our contract. Then we have setup a subgraph using TheGraph Protocol for indexing events from Ethereum.
+The Backend is basically our smart contract which interacts with the blockchain. For the smart contract, we have used Solidity. We have used Hardhat for compiling, deploying and testing our contract. Then we have setup a subgraph using TheGraph Protocol for indexing events from Ethereum. For storing thumbnail to IPFS, we have used Web3 Storage which uses Filecoin under the hood.
 
 **Second - The Frontend**       
 We built an extensive front-end. For this we have used Next.js. We used Apollo to interact with the subgraph, and used wagmi+ethers.js to interact with the PeerTube smart contract. We have used RainbowKit for the connect wallet button.
