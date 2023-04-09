@@ -6,6 +6,11 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 ## Polyscan Contract
 [https://mumbai.polygonscan.com/address/0x55525391d1A9EBd9FbAc0B44bb65E9336047f2dA](Polyscan)
 
+## About PeerTube
+
+PeerTube is a decentralized video sharing and viewing platform. It is like a Web3 version of YouTube. PeerTube lets you upload a video, view it, subscribe to a channel, like/dislike and comment on a video publicly. Users pay a subscription price to follow creators. 
+
+We combined Push Protocol,TheGraph Protocol and Livepeer, and deployed it all on Polygon Mumbai Testnet.
 ## Getting Started
 
 First, run the development server:
