@@ -1,21 +1,19 @@
 import Head from "next/head";
 import Image from "next/image";
 import { Inter } from "next/font/google";
-import styles from "@/styles/Home.module.css";
 import Sidebar from "@/components/Sidebar";
 import VideoCard from "@/components/VideoCard";
 import { useContext, useState, useEffect } from "react";
-import { NotificationsContext } from "@/hooks/useNotifications";
+import { NotificationsContext, VideoContext } from "@/hooks/useNotifications";
 import NotificationList from "@/components/NotificationsList";
 import { useApolloClient, gql } from "@apollo/client";
-import { create } from "ipfs-http-client";
 import { useAccount } from "wagmi";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
   const { showNotifications } = useContext(NotificationsContext);
-  const [videos, setVideos] = useState([]);
+  const { videos, setVideos } = useContext(VideoContext);
   const [thumbnailHash, setThumbnailHash] = useState("");
 
   const client = useApolloClient();
@@ -88,6 +86,8 @@ export default function Home() {
       setAccount(null);
     }
     getVideos();
+
+    // console.log("Videos,", videos);
   }, [address]);
 
   return (
@@ -101,18 +101,24 @@ export default function Home() {
         )}
         {account ? (
           <div className="grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 w-full h-full justify-center z-10 md:pl-[10%] md:pt-[10%] lg:pt-[7%] lg:pl-[7%]  pt-[15%] pl-[15%]">
-            {videos?.map((video) => (
-              <div>
-                <VideoCard
-                  id={video.id}
-                  title={video.title}
-                  createdAt={video.date}
-                  creator={video.author}
-                  thumbnailHash={video.thumbnailHash}
-                  link={thumbnailHash}
-                />
-              </div>
-            ))}
+            {videos.length != 0 ? (
+              videos?.map((video) => (
+                <div>
+                  <VideoCard
+                    id={video.id}
+                    title={video.title}
+                    createdAt={video.date}
+                    creator={video.author}
+                    thumbnailHash={video.thumbnailHash}
+                    link={thumbnailHash}
+                  />
+                </div>
+              ))
+            ) : (
+              <p className="text-xl font-semibold text-white text-center">
+                No videos match your search
+              </p>
+            )}
           </div>
         ) : (
           <div className="flex w-full h-screen justify-center items-center">

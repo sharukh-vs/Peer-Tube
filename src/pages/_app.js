@@ -11,7 +11,7 @@ import {
   createReactClient,
   studioProvider,
 } from "@livepeer/react";
-import { NotificationsContext } from "@/hooks/useNotifications";
+import { NotificationsContext, VideoContext } from "@/hooks/useNotifications";
 import { useState } from "react";
 import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 
@@ -42,16 +42,19 @@ const apolloClient = new ApolloClient({
 
 export default function App({ Component, pageProps }) {
   const [showNotifications, setShowNotifications] = useState(false);
+  const [videos, setVideos] = useState([]);
   return (
     <WagmiConfig client={wagmiClient}>
       <RainbowKitProvider chains={chains} coolMode>
         <ApolloProvider client={apolloClient}>
           <LivepeerConfig client={livepeerClient}>
-            <NotificationsContext.Provider
-              value={{ showNotifications, setShowNotifications }}
-            >
-              <Component {...pageProps} />
-            </NotificationsContext.Provider>
+            <VideoContext.Provider value={{ videos, setVideos }}>
+              <NotificationsContext.Provider
+                value={{ showNotifications, setShowNotifications }}
+              >
+                <Component {...pageProps} />
+              </NotificationsContext.Provider>
+            </VideoContext.Provider>
           </LivepeerConfig>
         </ApolloProvider>
       </RainbowKitProvider>

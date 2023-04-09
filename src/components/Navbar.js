@@ -11,12 +11,71 @@ import { IconContext } from "react-icons";
 import { useContext, useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
-import { NotificationsContext } from "@/hooks/useNotifications";
+import { NotificationsContext, VideoContext } from "@/hooks/useNotifications";
+import { gql, useApolloClient } from "@apollo/client";
 
 export default function Navbar() {
   const [searchText, setSearchText] = useState("");
   const { showNotifications, setShowNotifications } =
     useContext(NotificationsContext);
+  const { setVideos } = useContext(VideoContext);
+
+  const client = useApolloClient();
+
+  const QUERY = gql`
+    query videos(
+      $first: Int
+      $skip: Int
+      $orderBy: Video_orderBy
+      $orderDirection: OrderDirection
+      $where: Video_filter
+    ) {
+      videos(
+        first: $first
+        skip: $skip
+        orderBy: $orderBy
+        orderDirection: $orderDirection
+        where: $where
+      ) {
+        id
+        hash
+        title
+        description
+        category
+        thumbnailHash
+        date
+        author
+      }
+    }
+  `;
+
+  const getSearchedVideos = async () => {
+    // Query the videos from the graph
+    client
+      .query({
+        query: QUERY,
+        variables: {
+          first: 200,
+          skip: 0,
+          orderBy: "date",
+          orderDirection: "desc",
+          // NEW: Added where in order to search for videos
+          where: {
+            ...(searchText && {
+              title_contains_nocase: searchText,
+            }),
+          },
+        },
+        fetchPolicy: "network-only",
+      })
+      .then(({ data }) => {
+        // Set the videos to the state
+        setVideos(data.videos);
+      })
+      .catch((err) => {
+        alert("Something went wrong. please try again.!", err.message);
+      });
+  };
   return (
     <>
       <div className="flex flex-row  justify-between w-full  items-center ">
@@ -36,7 +95,10 @@ export default function Navbar() {
             className="w-[88%] bg-[#323232] rounded-xl rounded-r-none h-9 px-4"
             placeholder="Search"
           />
-          <button className="rounded-xl w-[12%] flex items-center justify-center">
+          <button
+            className="rounded-xl w-[12%] flex items-center justify-center"
+            onClick={getSearchedVideos}
+          >
             <MagnifyingGlassIcon width={25} height={25} />
           </button>
         </div>
