@@ -9,7 +9,7 @@ import { FaThumbsUp, FaThumbsDown } from "react-icons/fa";
 import { IconContext } from "react-icons";
 import TextField from "@mui/material/TextField";
 import Comment from "./Comment";
-import { useSigner, useAccount, useContract } from "wagmi";
+import { useSigner, useAccount } from "wagmi";
 import * as PushAPI from "@pushprotocol/restapi";
 
 import {
@@ -67,12 +67,6 @@ export default function VideoContainer({ video }) {
       console.log("Success the Signer is :", signer);
     },
   });
-
-  const contract = useContract({
-    address: CONTRACT_ADDRESS,
-    abi: PeerTube.abi,
-    signerOrProvider: signer,
-  });
   const { address } = useAccount();
 
   const client = useApolloClient();
@@ -83,18 +77,18 @@ export default function VideoContainer({ video }) {
     args: [video.id, comment],
   });
 
-  //   const { config: likeConfig } = usePrepareContractWrite({
-  //     address: CONTRACT_ADDRESS,
-  //     abi: PeerTube.abi,
-  //     functionName: "addLike",
-  //     args: [video.id],
-  //     onSuccess() {
-  //       console.log("Like Config, ", likeConfig);
-  //     },
-  //     onError(e) {
-  //       console.log("Like Config Error, ", e.message);
-  //     },
-  //   });
+  const { config: likeConfig } = usePrepareContractWrite({
+    address: CONTRACT_ADDRESS,
+    abi: PeerTube.abi,
+    functionName: "addLike",
+    args: [video.id],
+    onSuccess() {
+      console.log("Like Config, ", likeConfig);
+    },
+    onError(e) {
+      console.log("Like Config Error, ", e.message);
+    },
+  });
   const { config: dislikeConfig } = usePrepareContractWrite({
     address: CONTRACT_ADDRESS,
     abi: PeerTube.abi,
@@ -110,27 +104,20 @@ export default function VideoContainer({ video }) {
     error: commentError,
   } = useContractWrite(commentConfig);
 
-  //   const {
-  //     data: likeData,
-  //     write: likeVideo,
-  //     isLoading: isLiking,
-  //     isSuccess: likeVideoSuccess,
-  //     error: likeError,
-  //   } = useContractWrite({
-  //     mode: "recklesslyUnprepared",
-  //     address: CONTRACT_ADDRESS,
-  //     abi: PeerTube.abi,
-  //     functionName: "addLike",
-  //     args: [video.id],
-
-  //   });
-  //   const {
-  //     data: dislikeData,
-  //     write: dislikeVideo,
-  //     isLoading: isDisliking,
-  //     isSuccess: dislikeVideoSuccess,
-  //     error: dislikeError,
-  //   } = useContractWrite(dislikeConfig);
+  const {
+    data: likeData,
+    write: likeVideo,
+    isLoading: isLiking,
+    isSuccess: likeVideoSuccess,
+    error: likeError,
+  } = useContractWrite(likeConfig);
+  const {
+    data: dislikeData,
+    write: dislikeVideo,
+    isLoading: isDisliking,
+    isSuccess: dislikeVideoSuccess,
+    error: dislikeError,
+  } = useContractWrite(dislikeConfig);
 
   const COMMENTS_QUERY = gql`
     query comments($first: Int, $where: Video_filter, $videoId: String) {
@@ -223,6 +210,7 @@ export default function VideoContainer({ video }) {
     watch: true,
     onSuccess() {
       console.log("Like count from read contract: ", likeCount.toString());
+      setLikes(likeCount?.toString());
     },
   });
 
@@ -237,6 +225,7 @@ export default function VideoContainer({ video }) {
         "Dislike count from read contract: ",
         dislikeCount.toString()
       );
+      setDislikes(dislikeCount?.toString());
     },
   });
 
@@ -251,11 +240,9 @@ export default function VideoContainer({ video }) {
 
     getComments();
     console.log(`Like Count: ${likeCount}`);
-    // console.log("Like Data", likeData);
-    setLikes(likeCount?.toString());
-    setDislikes(dislikeCount?.toString());
+    console.log("Like Data", likeData);
 
-    // console.log("Dislike Data", dislikeData);
+    console.log("Dislike Data", dislikeData);
   }, []);
 
   return (
@@ -304,10 +291,9 @@ export default function VideoContainer({ video }) {
               <div className="mr-2 pr-2 border-r-2 hover:opacity-70">
                 <button
                   className="flex flex-row  items-center"
-                  onClick={async () => {
+                  onClick={() => {
                     console.log(`Video id: ${video.id}`);
-                    // likeVideo();
-                    await contract.addLike(parseInt(video.id));
+                    likeVideo();
                   }}
                 >
                   <IconContext.Provider value={{ className: "w-6 h-6" }}>
