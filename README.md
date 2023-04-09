@@ -15,7 +15,7 @@ We combined Push Protocol, TheGraph Protocol and Livepeer, and deployed it all o
 ## How it works
 There are three parts to our project.
 
-First - The Backend\n
+First - The Backend.  
 The Backend is basically our smart contract which interacts with the blockchain. For the smart contract, we have used Solidity. We have used Hardhat for compiling, deploying and testing our contract. Then we have setup a subgraph using TheGraph Protocol for indexing events from Ethereum. 
 
 ## Getting Started
