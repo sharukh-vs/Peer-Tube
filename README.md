@@ -1,5 +1,11 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
+## LinkedIn
+[https://www.linkedin.com/in/mohd-ziyad-565081225/](LinkedIn)
+
+## Polyscan Contract
+[https://mumbai.polygonscan.com/address/0x55525391d1A9EBd9FbAc0B44bb65E9336047f2dA](Polyscan)
+
 ## Getting Started
 
 First, run the development server:
