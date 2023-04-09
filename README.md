@@ -8,7 +8,7 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## About PeerTube
 
-PeerTube is a decentralized video sharing and viewing platform. It is like a Web3 version of YouTube. PeerTube lets you upload a video, view it, subscribe to a channel, like/dislike and comment on a video publicly. Users pay a subscription price to follow creators. 
+PeerTube is a decentralized video sharing and viewing platform. It is like a Web3 version of YouTube. PeerTube lets you upload a video, view it, subscribe to a channel, like/dislike and comment on a video publicly. Users can also search for the videos which are present on chain. Users pay a subscription price to follow creators. 
 
 We combined Push Protocol,TheGraph Protocol and Livepeer, and deployed it all on Polygon Mumbai Testnet.
 ## Getting Started
