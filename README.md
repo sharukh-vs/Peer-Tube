@@ -6,6 +6,10 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 ## Polyscan Contract
 [https://mumbai.polygonscan.com/address/0x55525391d1A9EBd9FbAc0B44bb65E9336047f2dA](Polyscan)
 
+## Subgraph (TheGraph Protocol)
+
+[https://thegraph.com/hosted-service/subgraph/mohdziyadc/peer-tube-v2](Subgraph)
+
 ## About PeerTube
 
 PeerTube is a decentralized video sharing and viewing platform. It is like a Web3 version of YouTube. PeerTube lets you upload a video, view it, subscribe to a channel, like/dislike and comment on a video publicly. Users can also search for the videos which are present on chain. Users pay a subscription price to follow creators. 
@@ -22,7 +26,7 @@ The Backend is basically our smart contract which interacts with the blockchain.
 We built an extensive front-end. For this we have used Next.js. We used Apollo to interact with the subgraph, and used wagmi+ethers.js to interact with the PeerTube smart contract. We have used RainbowKit for the connect wallet button.
 
 **Third - Push Protocol and Livepeer**              
-Once a user uploads their video from the frontend, it would be uploaded to Livepeer and from there the video will be fetched and streamed. We have also implemented Push Protocol by showing notifications in a notification box. The creator of the video can only notify their subscribers. For subscriptions and push notifications, we have used Push Protocol. 
+Once a user uploads their video from the frontend, it would be uploaded to ipfs using Livepeer’s API and from there the video will be fetched and streamed. The IPFS url is used to create a video. We have also implemented Push Protocol by showing notifications in a notification box. The creator of the video can only notify their subscribers. For subscriptions and push notifications, we have used Push Protocol. 
 
 ## Getting Started
 
